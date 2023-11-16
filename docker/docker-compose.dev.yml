@@ -1,0 +1,47 @@
+version: "3.8"
+name: pp-site-backend-dev
+services:
+  app:
+    container_name: nestjs
+    image: nestjs-dev
+    restart: unless-stopped
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+      target: dev
+    volumes:
+      - ../:/app
+      - node_modules:/app/node_modules
+    env_file:
+      - ../.ops/.env/.env.dev
+    ports:
+      - ${APP_OUTER_PORT}:${APP_PORT}
+    depends_on:
+      - db
+
+  db:
+    image: mysql
+    cap_add:
+      - SYS_NICE    
+    container_name: mysql
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=pp
+      - MYSQL_ROOT_HOST=%
+    restart: always
+    ports:
+      - '3306:3306'
+    volumes:  
+      - /var/lib/mysql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - '8081:8080'
+
+volumes:
+  node_modules:
+    name: "node_modules"

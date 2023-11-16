@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("MYSQL_DB_URL")
+}
+
+model User {
+  id                    Int      @id @default(autoincrement())
+  address               String   @unique
+
+  createdAt             DateTime @default(now()) @db.DateTime(6)
+  updatedAt             DateTime @updatedAt @db.DateTime(6)
+
+  rules                 Rule[]
+}
+
+model AuthNonce {
+  id                    Int      @id @default(autoincrement())
+  address               String   @unique
+  nonce                 String
+
+  createdAt             DateTime @default(now()) @db.DateTime(6)
+  updatedAt             DateTime @updatedAt @db.DateTime(6)
+}
+
+model SubscriptionPlan {
+  subscriptionPlanId    Int      @id @default(autoincrement())
+
+  name                  String   @unique
+  basePrice             Decimal
+  currency              PaymentsCurrencies @default(USDT)
+  features              Json?
+
+  createdAt             DateTime @default(now()) @db.DateTime(6)
+  updatedAt             DateTime @updatedAt @db.DateTime(6)
+}
+
+model SubscriptionPeriod {
+  subscriptionPeriodId  Int      @id @default(autoincrement())
+
+  name                  String   @unique
+  freeMonths            Int
+
+  createdAt             DateTime @default(now()) @db.DateTime(6)
+  updatedAt             DateTime @updatedAt @db.DateTime(6)
+}
+
+model Rule {
+  ruleId                Int      @id @default(autoincrement())
+  userId                Int
+
+  name                  String   @unique
+  description           String
+  image                 String
+
+  isActive              Boolean  @default(true)
+
+  createdAt             DateTime @default(now()) @db.DateTime(6)
+  updatedAt             DateTime @updatedAt @db.DateTime(6)
+
+  ruleCodes             RuleCode[]
+  user                  User     @relation(fields: [userId], references: [id])
+}
+
+model RuleCode {
+  ruleCodeId            Int      @id @default(autoincrement())
+  ruleId                Int
+
+  code                  String
+  version               Int
+
+  createdAt             DateTime @default(now()) @db.DateTime(6)
+  updatedAt             DateTime @updatedAt @db.DateTime(6)
+
+  rule                  Rule     @relation(fields: [ruleId], references: [ruleId])
+
+  @@unique([ruleCodeId, version])
+}
+
+enum PaymentsCurrencies {
+  USDT
+}

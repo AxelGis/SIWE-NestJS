@@ -1,0 +1,15 @@
+version: "3.8"
+name: pp-site-backend-prod
+services:
+  app:
+    container_name: nestjs
+    image: nestjs-prod
+    restart: unless-stopped
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+      target: prod
+    env_file:
+      - ../.ops/.env/.env.prod
+    ports:
+      - ${APP_OUTER_PORT}:${APP_PORT}
